@@ -63,18 +63,145 @@ $(".st-item").children("span").children("i.iconfont").click(function () {
   }
 });
 
+// 模拟后端传来的数据
+let res = {
+  "status": 200,
+  "data": [
+    "酒", "酒文化", "啤酒", "白酒", "黄酒", "红酒", "葡萄酒", "酒精", "酒鬼", "酒疯"
+  ]
+}
+let wordsArr = new Array;
+const circleRd = document.getElementsByClassName("circle-rd");
+
+for (let i = 0; i < 5; i++) {
+  circleRd[i].innerHTML = res.data[i];
+}
+
 // 发ajax
-$(".swiper-slide > i.iconfont").click(function () {
-  $.ajax({
-      url: `https://cmind.qliphoth.tech/api/related`,
-      data: {word: $("input").val()},
-      type: 'GET',
-      dataType: 'json',
-      success: function (data) {
-        console.log('data' + data);
-      }, 
-      error: function () {
-        console.log('出错了！');
-      }
-    })
+// $(".swiper-slide > i.iconfont").click(function () {
+//   $.ajax({
+//       url: 'http://cmind.qliphoth.tech/api/related', // 待测试
+//       data: { "word": $("input").val()},
+//       type: 'GET',
+//       dataType: 'json',
+//       success: function (res) {
+//         console.log('data' + res);
+//         // 传来的是一个对象，含有status和data属性，data是数组
+//         wordsArr = res.data; // 将data数组保存下来，为之后的刷新做准备
+//         // 如果保存不下来，可能要使用缓存的API
+//         if (res.status == 200) {
+//           for (let i = 0; i < 5; i++) {
+//             $(".circle-rd")[i].html(wordsArr[i]);
+//           }
+//         }
+//         else {
+//           console.error('出错了！');
+//         }
+//       }, 
+//       error: function () {
+//         console.error('出错了！');
+//       }
+//     })
+// });
+
+// 更新词语
+// $(".update").click(function() {
+//   for (let i = 5; i < 10; i++) {
+//     $(".circle-rd")[i].html(wordsArr[i]);
+//   }
+// });
+
+// 之后改，应该要不断地加5 
+let updateBtn = document.getElementsByClassName("update")[0];
+updateBtn.onclick = function () {
+  for (let i = 0; i < 5; i++) {
+    console.log(circleRd[i]);
+    circleRd[i].innerHTML = res.data[i + 5];
+  }
+};
+
+// 长按加入收藏夹
+let wordsList = new Array; // 存每一层级的关键词
+$(".circle-rd").click(function () {
+
+})
+
+let logClick = 0;
+
+// 存每一级词的对象
+let obj = new Object;
+
+let index = 0;
+
+// 收藏夹对象
+let favObj = new Object;
+
+$(".circle-rd").on({
+  touchstart: function (e) {
+    longClick = 0;
+    timeOutEvent = setTimeout(function () {
+      // 长按
+      // 问题：若长按后鼠标在圆上松开，会触发单击函数
+      console.log('长按！');
+
+      longClick = 1;
+    }, 500);
+  },
+  touchmove: function (e) {
+    clearTimeout(timeOutEvent);
+    timeOutEvent = 0;
+    e.preventDefault();
+  },
+  touchend: function (e) {
+    clearTimeout(timeOutEvent);
+    if (timeOutEvent != 0 && longClick == 0) {
+      // 点击
+      console.log('单击！');
+      // $.ajax({
+      //   url: 'http://cmind.qliphoth.tech/api/related',
+      //   data: { "word": $(this).html() },
+      //   type: 'GET',
+      //   dataType: 'json',
+      //   success: function (res) {
+      //     if (res.status == 200) {
+      //       wordsList.push($(this).html());
+      //       $(".menu").append(`<p num="${index}">${$(this).html()}</p>`);
+      //       // 更新词语
+      //       let wordsArr = res.data;
+      //       // 存入对象的属性
+      //       obj[`attr${index}`] = wordsArr;
+      //       index++;
+
+      //       for (let i = 0; i < 5; i++) {
+      //         $(".circle-rd")[i].html(wordsArr[i]);
+      //       }
+      //     }
+      //     else {
+      //       console.error('出错了！');
+      //     }
+      //   },
+      //   error: function () {
+      //     console.error('出错了！');
+      //   }
+      // })
+    }
+    return false;
+  }
 });
+
+$(".menu > p").click(function () {
+  let num = Number($(this).attr("num"));
+  console.log(num);
+  for (let i = 0; i < 5; i++) {
+    $(".circle-rd")[i].html(obj[`attr${num}`][i]);
+  }
+});
+
+// let obj2 = new Object;
+// let hello = 'haha';
+// obj2[hello] = [2,5,7,9];
+// console.log(obj2[hello]);
+// console.log(obj2);
+
+
+
