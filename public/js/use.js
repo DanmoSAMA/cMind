@@ -64,138 +64,228 @@ $(".st-item").children("span").children("i.iconfont").click(function () {
 });
 
 // 模拟后端传来的数据
-let res = {
-  "status": 200,
-  "data": [
-    "酒", "酒文化", "啤酒", "白酒", "黄酒", "红酒", "葡萄酒", "酒精", "酒鬼", "酒疯"
-  ]
-}
-let wordsArr = new Array;
-const circleRd = document.getElementsByClassName("circle-rd");
+// let res = {
+//   "status": 200,
+//   "data": [
+//     "酒", "酒文化", "啤酒", "白酒", "黄酒", "红酒", "葡萄酒", "酒精", "酒鬼", "酒疯"
+//   ]
+// }
+// let wordList = new Array;
+// const circleRd = document.getElementsByClassName("circle-rd");
 
-for (let i = 0; i < 5; i++) {
-  circleRd[i].innerHTML = res.data[i];
+// for (let i = 0; i < 5; i++) {
+//   circleRd[i].innerHTML = res.data[i];
+// }
+
+function inited() {
+  let history = localStorage.getItem("history");
+  return (history !== null && history[0] !== undefined);
 }
 
-// 发ajax
-// $(".swiper-slide > i.iconfont").click(function () {
-//   $.ajax({
-//       url: 'http://cmind.qliphoth.tech/api/related', // 待测试
-//       data: { "word": $("input").val()},
-//       type: 'GET',
-//       dataType: 'json',
-//       success: function (res) {
-//         console.log('data' + res);
-//         // 传来的是一个对象，含有status和data属性，data是数组
-//         wordsArr = res.data; // 将data数组保存下来，为之后的刷新做准备
-//         // 如果保存不下来，可能要使用缓存的API
-//         if (res.status == 200) {
-//           for (let i = 0; i < 5; i++) {
-//             $(".circle-rd")[i].html(wordsArr[i]);
-//           }
-//         }
-//         else {
-//           console.error('出错了！');
-//         }
-//       }, 
-//       error: function () {
-//         console.error('出错了！');
-//       }
-//     })
-// });
+function getLocal(name, def) {
+  let obj = localStorage.getItem(name);
+  return obj === null ? def : JSON.parse(obj);
+}
+
+function setLocal(name, obj) {
+  localStorage.setItem(name, JSON.stringify(obj));
+}
+
+function reset() {
+  localStorage.removeItem("favorite");
+  localStorage.removeItem("history");
+  for (let i = 0; i < 5; i++) {
+    $($(".circle-rd")[i]).html("");
+  }
+}
+
+var start = 0;
+var wordList;
+
+function copyToCircle(arr) {
+  for (let i = 0; i < 5; i++) {
+    $($(".circle-rd")[i]).html(i + start < arr.length ? arr[start + i] : "");
+  }
+}
+
+// init
+(() => {
+  reset(); // TODO: Remove it when not debugging
+  let history = getLocal("history", []);
+  wordList = history.length > 0 ? history[history.length - 1].wordList : [];
+  copyToCircle(wordList);
+})();
+
+
+// search
+// TODO: clear the search text when clicked
+$(".swiper-slide > i.iconfont").click(function () {
+  let keyword = $("input").val();
+  if (keyword === "") {
+    return;
+  }
+  $.ajax({
+    url: 'https://cmind-app.qliphoth.tech/api/related', // 待测试
+    data: { "word": keyword },
+    type: 'GET',
+    dataType: 'json',
+    success: function (res) {
+      // 传来的是一个对象，含有status和data属性，data是数组
+      // 如果保存不下来，可能要使用缓存的API
+      if (res.status == 200) {
+        wordList = res.data; // 将data数组保存下来，为之后的刷新做准备
+        let history = getLocal("history", []);
+        if (inited() && (wordList[0] === undefined || wordList[0] !== keyword)) {
+          wordList.unshift(keyword);
+        }
+        if (history.length === 0 || history[history.length - 1].keyword !== keyword) {
+          appendKeyword(keyword);
+          history.push({keyword, wordList});
+          setLocal("history", history);
+        }
+        start = 0;
+        copyToCircle(wordList);
+      }
+      else {
+        console.error('出错了！');
+      }
+    },
+    error: function () {
+      console.error('出错了！');
+    }
+  })
+});
 
 // 更新词语
 // $(".update").click(function() {
 //   for (let i = 5; i < 10; i++) {
-//     $(".circle-rd")[i].html(wordsArr[i]);
+//     $($(".circle-rd")[i]).html(wordList[i]);
 //   }
 // });
 
 // 之后改，应该要不断地加5 
 let updateBtn = document.getElementsByClassName("update")[0];
 updateBtn.onclick = function () {
-  for (let i = 0; i < 5; i++) {
-    console.log(circleRd[i]);
-    circleRd[i].innerHTML = res.data[i + 5];
+  start += 5;
+  if (start >= wordList.length) {
+    start = 0;
   }
+  copyToCircle(wordList);
 };
 
-// 长按加入收藏夹
-let wordsList = new Array; // 存每一层级的关键词
-$(".circle-rd").click(function () {
-
-})
-
-let logClick = 0;
-
-// 存每一级词的对象
-let obj = new Object;
-
-let index = 0;
-
-// 收藏夹对象
-let favObj = new Object;
+let longClick = 0;
 
 $(".circle-rd").on({
   touchstart: function (e) {
+    let keyword = $(this).html();
+    if (keyword === "") {
+      return;
+    }
     longClick = 0;
-    timeOutEvent = setTimeout(function () {
+      timeOutEvent = setTimeout(function () {
       // 长按
       // 问题：若长按后鼠标在圆上松开，会触发单击函数
       console.log('长按！');
-
-      longClick = 1;
+      let favorite = getLocal("favorite", {});
+      let history = getLocal("history", []);
+      let cursor = favorite;
+      for (let i = 1; i < history.length; i++) {
+        if (cursor.hasOwnProperty(history[i])) {
+          cursor = cursor[history[i]];
+        }
+      }
+      if (!cursor.hasOwnProperty(keyword)) {
+        cursor[keyword] = null;
+      }
+      setLocal("favorite", favorite);
     }, 500);
   },
   touchmove: function (e) {
+    if ($(this).html() === "") {
+      return;
+    }
     clearTimeout(timeOutEvent);
     timeOutEvent = 0;
     e.preventDefault();
   },
   touchend: function (e) {
+    let keyword = $(this).html();
+    if (keyword === "") {
+      return false;
+    }
     clearTimeout(timeOutEvent);
-    if (timeOutEvent != 0 && longClick == 0) {
-      // 点击
+      if (timeOutEvent != 0 && longClick == 0) {
+        // 点击
       console.log('单击！');
-      // $.ajax({
-      //   url: 'http://cmind.qliphoth.tech/api/related',
-      //   data: { "word": $(this).html() },
-      //   type: 'GET',
-      //   dataType: 'json',
-      //   success: function (res) {
-      //     if (res.status == 200) {
-      //       wordsList.push($(this).html());
-      //       $(".menu").append(`<p num="${index}">${$(this).html()}</p>`);
-      //       // 更新词语
-      //       let wordsArr = res.data;
-      //       // 存入对象的属性
-      //       obj[`attr${index}`] = wordsArr;
-      //       index++;
-
-      //       for (let i = 0; i < 5; i++) {
-      //         $(".circle-rd")[i].html(wordsArr[i]);
-      //       }
-      //     }
-      //     else {
-      //       console.error('出错了！');
-      //     }
-      //   },
-      //   error: function () {
-      //     console.error('出错了！');
-      //   }
-      // })
+      $.ajax({
+        url: 'https://cmind-app.qliphoth.tech/api/related',
+        data: { "word": keyword },
+        type: 'GET',
+        dataType: 'json',
+        success: function (res) {
+          if (res.status == 200) {
+            wordList = res.data;
+            let history = getLocal("history", []);
+            if (history.length === 0 || history[history.length - 1].keyword !== keyword) {
+              appendKeyword(keyword);
+              history.push({keyword, wordList});
+              setLocal("history", history);
+            }
+            start = 0;
+            copyToCircle(wordList);
+          }
+          else {
+            console.error('出错了！');
+          }
+        },
+        error: function () {
+          console.error('出错了！');
+        }
+      });
     }
     return false;
   }
 });
 
-$(".menu > p").click(function () {
-  let num = Number($(this).attr("num"));
-  console.log(num);
-  for (let i = 0; i < 5; i++) {
-    $(".circle-rd")[i].html(obj[`attr${num}`][i]);
-  }
-});
+function appendKeyword(keyword) {
+  let bar = $(`<p>${keyword}</p>`);
+  bar.click(function () {
+    console.log(this);
+    let children = this.parentNode.childNodes;
+    let i;
+    for (i = 0; i < children.length; i++) {
+      if (children[i] === this) {
+        break;
+      }
+    }
+    let history = getLocal("history", []);
+    for (let k = children.length - 1; k > i; k--) {
+      history.pop();
+      this.parentNode.removeChild(children[k]);
+    }
+    setLocal("history", history);
+    wordList = history[history.length - 1].wordList;
+    start = 0;
+    copyToCircle(wordList);
+    // let num = Number($(this).attr("num"));
+    // console.log(num);
+    // for (let i = 0; i < 5; i++) {
+    //   $($(".circle-rd")[i]).html(obj[`attr${num}`][i]);
+    // }
+  });
+  $(".menu").append(bar);
+}
+
+// console.log($(".menu > p"));
+// $(".menu > p").click(function () {
+//   console.log("clicked")
+//   console.log(this);
+//   // let num = Number($(this).attr("num"));
+//   // console.log(num);
+//   // for (let i = 0; i < 5; i++) {
+//   //   $($(".circle-rd")[i]).html(obj[`attr${num}`][i]);
+//   // }
+// });
 
 // let obj2 = new Object;
 // let hello = 'haha';
