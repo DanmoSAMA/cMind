@@ -243,7 +243,7 @@ $(".swiper-slide > i.iconfont").click(function () {
     return;
   }
   $.ajax({
-    url: 'https://cmind-app.qliphoth.tech/api/related', // 待测试
+    url: '/api/related', // 改了路径，回去commit
     data: { "word": keyword },
     type: 'GET',
     dataType: 'json',
