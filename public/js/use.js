@@ -25,15 +25,15 @@ setInterval(() => {
 
     }
   }
-  // 收藏夹（修改）
-  $(".words > span").click(function () {
-    $(this).parent().parent().append(`
-    <div class="st-item" folded="true">
-      <span>${$(this).html()}</span>
-    </div>
-  `);
-    $(this).parent().remove();
-  });
+  // // 收藏夹（修改）
+  // $(".words > span").click(function () {
+  //   $(this).parent().parent().append(`
+  //   <div class="st-item" folded="true">
+  //     <span>${$(this).html()}</span>
+  //   </div>
+  // `);
+  //   $(this).parent().remove();
+  // });
 }, 166);
 
 function freshFav() {
