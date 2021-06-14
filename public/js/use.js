@@ -264,9 +264,9 @@ $(".swiper-slide > i.iconfont").click(function () {
         copyToCircle(wordList);
         $("input").val(''); // 清空input
 
-        $(".fav-list").append(`
-          <span>${history[0].keyword}</span>
-        `)
+        // $(".fav-list").append(`
+        //   <span>${history[0].keyword}</span>
+        // `)
       }
       else {
         console.error('出错了！');
