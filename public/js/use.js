@@ -204,6 +204,7 @@ function setLocal(name, obj) {
 function reset() {
   localStorage.removeItem("favorite");
   localStorage.removeItem("history");
+  favStack = [];
   for (let i = 0; i < 5; i++) {
     $($(".circle-rd")[i]).html("");
   }
@@ -243,7 +244,7 @@ $(".swiper-slide > i.iconfont").click(function () {
     return;
   }
   $.ajax({
-    url: '/api/related', // 改了路径，回去commit
+    url: 'https://cmind-app.qliphoth.tech/api/related', // 改了路径，回去commit
     data: { "word": keyword },
     type: 'GET',
     dataType: 'json',
@@ -290,6 +291,14 @@ updateBtn.onclick = function () {
 
 let longClick = 0;
 
+// $("circle-rd").click(function () {
+//   console.log('继续单击');
+//   $(this).animate({
+//     backgroundColor: "grey"
+//   }),
+//   "slow"
+// });
+
 $(".circle-rd").on({
   touchstart: function (e) {
     let keyword = $(this).html();
@@ -319,13 +328,6 @@ $(".circle-rd").on({
 
       console.log(cursor);
       // 加入的位置和加入的词语
-
-      // for (let key in cursor) {
-      //   console.log(key);
-      //   $().append(`
-      //   <span>${key}</span>
-      // `);
-      // }
       console.log(cursor[cursor.length - 1]);
 
     }, 500);
