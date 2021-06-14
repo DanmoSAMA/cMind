@@ -2,6 +2,8 @@
 const menuArr = document.getElementsByClassName("topbar")[0].getElementsByTagName("div");
 const slideArr = document.getElementsByClassName("swiper-slide");
 
+var prevPage = 0;
+var favStack = [];
 setInterval(() => {
   for (let i = 0; i < slideArr.length; i++) {
     if (slideArr[i].className == "swiper-slide swiper-slide-active") {
@@ -9,9 +11,130 @@ setInterval(() => {
         menuArr[j].className = "";
       }
       menuArr[i].className = "topbar-chosen";
+      if (prevPage !== 1 && i === 1) {
+        freshFav();
+      }
+      else if (prevPage !== 2 && i === 2 && inited()) {
+        let history = getLocal("history", []);
+        let favorite = getLocal("favorite", {});
+        $("#third-slide").remove("svg");
+        $("#third-slide").prepend(`<svg id="mindmap"></svg>`);
+        drawOnSvg("mindmap", history[0].keyword, favorite);
+      }
+      prevPage = i;
+
     }
   }
-}, 166)
+  // 收藏夹（修改）
+  $(".words > span").click(function () {
+    $(this).parent().parent().append(`
+    <div class="st-item" folded="true">
+      <span>${$(this).html()}</span>
+    </div>
+  `);
+    $(this).parent().remove();
+  });
+}, 166);
+
+function freshFav() {
+  $(".mid-wrapper").empty();
+  $(".words-wrapper").empty();
+
+  if (inited()) {
+    // Display root
+    let history = getLocal("history", []);
+    $(".root > span").html(history[0].keyword).click(
+      function() {
+        favStack = [];
+        freshFav();
+      }
+    );
+
+    // Display bars
+    let cursor = getLocal("favorite", {});
+    for (let keyword of favStack) {
+      let elem = $(`<div class="fav-list"><span>${keyword}</span></div>`);
+      makeButton(
+        elem,
+        function short() {
+          while (favStack[favStack.length - 1] !== keyword) {
+            favStack.pop();
+          }
+          freshFav();
+        },
+        function long() {
+          while (favStack[favStack.length - 1] !== keyword) {
+            favStack.pop();
+          }
+          favStack.pop();
+          let favorite = getLocal("favorite", {});
+          let cursor = favorite;
+          for (let keyword of favStack) {
+            cursor = cursor[keyword];
+          }
+          cursor[keyword] = undefined;
+          setLocal("favorite", favorite);
+          freshFav();
+        }
+      );
+      $(".mid-wrapper").append(elem);
+      cursor = cursor[keyword];
+    }
+
+    // Display tabs
+    for (let keyword in cursor) {
+      let elem = $(`<span>${keyword} </span>`);
+      makeButton(
+        elem,
+        function short() {
+          favStack.push(keyword);
+          freshFav();
+        },
+        function long() {
+          let favorite = getLocal("favorite", {});
+          let cursor = favorite;
+          for (let keyword of favStack) {
+            cursor = cursor[keyword];
+          }
+          cursor[keyword] = undefined;
+          setLocal("favorite", favorite);
+          freshFav();
+        }
+      );
+      $(".words-wrapper").append(elem);
+    }
+  } else {
+    $(".root > span").html("");
+  }
+}
+
+function makeButton(elem, clickHandler, longClickHandler) {
+  let longClick = 0;
+  elem.on({
+    touchstart: function (e) {
+      longClick = 0;
+      timeOutEvent = setTimeout(function (e) {
+        longClick = 1;
+        console.log('长按！');
+        longClickHandler(e);
+      }, 500);
+    },
+    touchmove: function (e) {
+      clearTimeout(timeOutEvent);
+      timeOutEvent = 0;
+      e.preventDefault();
+    },
+    touchend: function (e) {
+      clearTimeout(timeOutEvent);
+      if (timeOutEvent != 0 && longClick == 0) {
+        // 点击
+        console.log('单击！');
+        clickHandler(e);
+      }
+      return false;
+    }
+  });
+}
 
 // 关键词
 $(".yours").children("i.iconfont").click(function () {
@@ -28,54 +151,41 @@ $(".yours").children("i.iconfont").click(function () {
 
 // 收藏夹
 
+//（此处注释不要删，展开一个菜单时合上另一个）
 // 一级
-$(".fav-list").children("span").children("i.iconfont").click(function () {
-  $(this).parents(".fav-list").children(".st-item").slideToggle("slow");
-  if ($(this).parents(".fav-list").attr("folded") == "false") {
-    $(this).parents(".fav-list").children("span").children("i.iconfont").html("&#xe62b;");
-    $(this).parents(".fav-list").attr("folded", "true");
-  }
-  else {
-    $(document.querySelectorAll(".fav-list[folded='false']")).children(".st-item").slideUp("slow");
-    $(document.querySelectorAll(".fav-list[folded='false']")).children("span").children("i.iconfont").html("&#xe62b;");
-    $(document.querySelectorAll(".fav-list[folded='false']")).attr("folded", "true");
+// $(".fav-list").children("span").children("i.iconfont").click(function () {
+//   $(this).parents(".fav-list").children(".st-item").slideToggle("slow");
+//   if ($(this).parents(".fav-list").attr("folded") == "false") {
+//     $(this).parents(".fav-list").children("span").children("i.iconfont").html("&#xe62b;");
+//     $(this).parents(".fav-list").attr("folded", "true");
+//   }
+//   else {
+//     $(document.querySelectorAll(".fav-list[folded='false']")).children(".st-item").slideUp("slow");
+//     $(document.querySelectorAll(".fav-list[folded='false']")).children("span").children("i.iconfont").html("&#xe62b;");
+//     $(document.querySelectorAll(".fav-list[folded='false']")).attr("folded", "true");
 
-    $(this).parents(".fav-list").children("span").children("i.iconfont").html("&#xe649;");
-    $(this).parents(".fav-list").attr("folded", "false");
-  }
-});
+//     $(this).parents(".fav-list").children("span").children("i.iconfont").html("&#xe649;");
+//     $(this).parents(".fav-list").attr("folded", "false");
+//   }
+// });
 
 // 二级
-$(".st-item").children("span").children("i.iconfont").click(function () {
+// $(".st-item").children("span").children("i.iconfont").click(function () {
 
-  $(this).parents(".st-item").children(".nd-item").slideToggle("slow");
-  if ($(this).parents(".st-item").attr("folded") == "false") {
-    $(this).parents(".st-item").children("span").children("i.iconfont").html("&#xe62b;");
-    $(this).parents(".st-item").attr("folded", "true");
-  }
-  else {
-    $(document.querySelectorAll(".st-item[folded='false']")).children(".nd-item").slideUp("slow");
-    $(document.querySelectorAll(".st-item[folded='false']")).children("span").children("i.iconfont").html("&#xe62b;");
-    $(document.querySelectorAll(".st-item[folded='false']")).attr("folded", "true");
+//   $(this).parents(".st-item").children(".nd-item").slideToggle("slow");
+//   if ($(this).parents(".st-item").attr("folded") == "false") {
+//     $(this).parents(".st-item").children("span").children("i.iconfont").html("&#xe62b;");
+//     $(this).parents(".st-item").attr("folded", "true");
+//   }
+//   else {
+//     $(document.querySelectorAll(".st-item[folded='false']")).children(".nd-item").slideUp("slow");
+//     $(document.querySelectorAll(".st-item[folded='false']")).children("span").children("i.iconfont").html("&#xe62b;");
+//     $(document.querySelectorAll(".st-item[folded='false']")).attr("folded", "true");
 
-    $(this).parents(".st-item").children("span").children("i.iconfont").html("&#xe649;");
-    $(this).parents(".st-item").attr("folded", "false");
-  }
-});
-
-// 模拟后端传来的数据
-// let res = {
-//   "status": 200,
-//   "data": [
-//     "酒", "酒文化", "啤酒", "白酒", "黄酒", "红酒", "葡萄酒", "酒精", "酒鬼", "酒疯"
-//   ]
-// }
-// let wordList = new Array;
-// const circleRd = document.getElementsByClassName("circle-rd");
-
-// for (let i = 0; i < 5; i++) {
-//   circleRd[i].innerHTML = res.data[i];
-// }
+//     $(this).parents(".st-item").children("span").children("i.iconfont").html("&#xe649;");
+//     $(this).parents(".st-item").attr("folded", "false");
+//   }
+// });
 
 function inited() {
   let history = localStorage.getItem("history");
@@ -99,8 +209,8 @@ function reset() {
   }
 }
 
-var start = 0;
-var wordList;
+let start = 0;
+let wordList;
 
 function copyToCircle(arr) {
   for (let i = 0; i < 5; i++) {
@@ -110,13 +220,21 @@ function copyToCircle(arr) {
 
 // init
 (() => {
-  reset(); // TODO: Remove it when not debugging
+  // reset(); // TODO: Remove it when not debugging
   let history = getLocal("history", []);
   wordList = history.length > 0 ? history[history.length - 1].wordList : [];
   copyToCircle(wordList);
+  // 修改menu
+  for (let i = 0; i < history.length; i++) {
+    appendKeyword(history[i].keyword);
+  }
+  // 添加收藏夹的词
+  // if (history[0]) {
+  //   $(".fav-list").append(`
+  //   <span>${history[0].keyword}</span>
+  // `)
+  // }
 })();
-
-
 // search
 // TODO: clear the search text when clicked
 $(".swiper-slide > i.iconfont").click(function () {
@@ -131,20 +249,24 @@ $(".swiper-slide > i.iconfont").click(function () {
     dataType: 'json',
     success: function (res) {
       // 传来的是一个对象，含有status和data属性，data是数组
-      // 如果保存不下来，可能要使用缓存的API
       if (res.status == 200) {
-        wordList = res.data; // 将data数组保存下来，为之后的刷新做准备
+        wordList = res.data;
         let history = getLocal("history", []);
         if (inited() && (wordList[0] === undefined || wordList[0] !== keyword)) {
           wordList.unshift(keyword);
         }
         if (history.length === 0 || history[history.length - 1].keyword !== keyword) {
           appendKeyword(keyword);
-          history.push({keyword, wordList});
+          history.push({ keyword, wordList });
           setLocal("history", history);
         }
         start = 0;
         copyToCircle(wordList);
+        $("input").val(''); // 清空input
+
+        $(".fav-list").append(`
+          <span>${history[0].keyword}</span>
+        `)
       }
       else {
         console.error('出错了！');
@@ -157,13 +279,6 @@ $(".swiper-slide > i.iconfont").click(function () {
 });
 
 // 更新词语
-// $(".update").click(function() {
-//   for (let i = 5; i < 10; i++) {
-//     $($(".circle-rd")[i]).html(wordList[i]);
-//   }
-// });
-
-// 之后改，应该要不断地加5 
 let updateBtn = document.getElementsByClassName("update")[0];
 updateBtn.onclick = function () {
   start += 5;
@@ -182,22 +297,37 @@ $(".circle-rd").on({
       return;
     }
     longClick = 0;
-      timeOutEvent = setTimeout(function () {
+    timeOutEvent = setTimeout(function () {
       // 长按
-      // 问题：若长按后鼠标在圆上松开，会触发单击函数
+      // 问题：若长按后鼠标在圆上松开，会触发单击函数（已解决）
+      longClick = 1;
       console.log('长按！');
+
       let favorite = getLocal("favorite", {});
       let history = getLocal("history", []);
       let cursor = favorite;
       for (let i = 1; i < history.length; i++) {
-        if (cursor.hasOwnProperty(history[i])) {
-          cursor = cursor[history[i]];
+        if (cursor.hasOwnProperty(history[i].keyword)) {
+          cursor = cursor[history[i].keyword];
         }
       }
       if (!cursor.hasOwnProperty(keyword)) {
-        cursor[keyword] = null;
+        cursor[keyword] = {};
       }
       setLocal("favorite", favorite);
+      console.log(favorite); // 使用它
+
+      console.log(cursor);
+      // 加入的位置和加入的词语
+
+      // for (let key in cursor) {
+      //   console.log(key);
+      //   $().append(`
+      //   <span>${key}</span>
+      // `);
+      // }
+      console.log(cursor[cursor.length - 1]);
+
     }, 500);
   },
   touchmove: function (e) {
@@ -214,8 +344,8 @@ $(".circle-rd").on({
       return false;
     }
     clearTimeout(timeOutEvent);
-      if (timeOutEvent != 0 && longClick == 0) {
-        // 点击
+    if (timeOutEvent != 0 && longClick == 0) {
+      // 点击
       console.log('单击！');
       $.ajax({
         url: 'https://cmind-app.qliphoth.tech/api/related',
@@ -228,7 +358,7 @@ $(".circle-rd").on({
             let history = getLocal("history", []);
             if (history.length === 0 || history[history.length - 1].keyword !== keyword) {
               appendKeyword(keyword);
-              history.push({keyword, wordList});
+              history.push({ keyword, wordList });
               setLocal("history", history);
             }
             start = 0;
@@ -267,31 +397,11 @@ function appendKeyword(keyword) {
     wordList = history[history.length - 1].wordList;
     start = 0;
     copyToCircle(wordList);
-    // let num = Number($(this).attr("num"));
-    // console.log(num);
-    // for (let i = 0; i < 5; i++) {
-    //   $($(".circle-rd")[i]).html(obj[`attr${num}`][i]);
-    // }
   });
   $(".menu").append(bar);
 }
 
-// console.log($(".menu > p"));
-// $(".menu > p").click(function () {
-//   console.log("clicked")
-//   console.log(this);
-//   // let num = Number($(this).attr("num"));
-//   // console.log(num);
-//   // for (let i = 0; i < 5; i++) {
-//   //   $($(".circle-rd")[i]).html(obj[`attr${num}`][i]);
-//   // }
-// });
-
-// let obj2 = new Object;
-// let hello = 'haha';
-// obj2[hello] = [2,5,7,9];
-// console.log(obj2[hello]);
-// console.log(obj2);
-
-
-
+$(".download").click(function () {
+  downloadPng(document.querySelector('#mindmap'));
+  // 下载导图
+});

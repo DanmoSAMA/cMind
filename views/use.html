@@ -139,7 +139,7 @@
         <i class="iconfont">&#xe617;</i>
 
         <div class="menu" style="display: none;" folded="true">
-          
+
         </div>
         <p class="yours">
           你的层级
@@ -149,22 +149,30 @@
       </div>
       <div class="swiper-slide">
         <div class="fav-list-wrapper">
-          <div class="fav-list" folded="true">
-            <span>
-              ● 收藏一
-              <i class="iconfont">&#xe62b;</i>
-            </span>
+          <div class="fav-list root">
+            <span></span>
+          </div>
+          <div class="mid-wrapper">
+            <div class="fav-list">
+
+            </div>
+            <div class="fav-list">
+
+            </div>
+          </div>
+          <div class="words-wrapper">
+
           </div>
         </div>
       </div>
-      <div class="swiper-slide">
+      <div id= "third-slide" class="swiper-slide">
+        <svg id="mindmap"></svg>
+        <span class="download">下载导图</span>
       </div>
     </div>
   </div>
 </body>
 <script src="../public/js/swiper.js"></script>
-
-<script src="../public/js/use.js"></script>
 
 <script>
   let minHeight = $(window).height() - 58;
@@ -173,5 +181,15 @@
   $(".swiper-slide").css("min-height", minHeight);
   let swiper = new Swiper('.swiper-container');
 </script>
+
+<script src="https://cdn.bootcdn.net/ajax/libs/d3/3.5.6/d3.js"></script>
+<script src="drawing/d3-flextree.js"></script>
+<script src="drawing/view.mindmap.js"></script>
+<script src="drawing/parse.txtmap.js"></script>
+<script src="drawing/transform.headings.js"></script>
+<script src="drawing/txtmap.js"></script>
+<script src="https://www.unpkg.com/svg-crowbar@0.6.5/dist/main.js"></script>
+
+<script src="../public/js/use.js"></script>
 
 </html>

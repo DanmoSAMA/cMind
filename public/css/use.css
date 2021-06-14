@@ -92,14 +92,43 @@ p.yours > i.iconfont{
   background-color: #FAC3C3;
   color: #F57E7D;
 }
+/*
 .fav-list-wrapper{
   margin-top: 1.2rem;
 }
 .fav-list{
   width: 10rem;
   background-color: #FCE7E7;
-  border-bottom: 0.1rem solid #ccc;
 }
+.fav-list span{
+  width: 9rem;
+  display: inline-block;
+}
+.fav-list > span{
+  font-size: 0.55rem;
+  color: #FE8181;
+  padding-left: 1rem;
+  height: 1.3rem;
+  line-height: 1.3rem;
+}
+.words{
+  width: 10rem;
+  height: 1.3rem;
+  line-height: 1.3rem;
+  background-color: #FAC3C3;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.words > span{
+  width: 1.6rem;
+  height: 1rem;
+  line-height: 1rem;
+  text-align: center;
+  border-radius: 0.5rem;
+  background-color: #FDA5A5;
+}
+
 .fav-list span{
   display: block;
   width: 93%;
@@ -123,17 +152,22 @@ p.yours > i.iconfont{
   font-size: 0.55rem;
   color: #FE8181;
 }
+
 .st-item{
   width: 10rem;
   background-color: #EDDDDD;
-  display: none;
+  display: none; 
 }
 .st-item > span{
-  padding-left: 0.7rem;
   font-size: 0.5rem;
   color: #999;
   border-top: 2px solid #eee;
+  height: 1.3rem;
+  line-height: 1.3rem;
+  padding-left: 1rem;
 }
+
+
 .nd-item{
   display: none;
 }
@@ -143,4 +177,72 @@ p.yours > i.iconfont{
   color: #999;
   border-top: 2px solid #eee;
   background-color: #FAE7E7;
+} 
+*/
+.fav-list-wrapper{
+  margin-top: 0.3rem;
+}
+.fav-list-wrapper span{
+  display: inline-block;
+}
+.fav-list.root{
+  width: 10rem;
+  font-size: 0.6rem;
+  margin-bottom: 0.2rem;
+}
+.fav-list.root > span{
+  padding-left: 0.4rem;
+}
+.fav-list{
+  width: 10rem;
+}
+.mid-wrapper{
+  width: 10rem;
+}
+.mid-wrapper > .fav-list > span{
+  width: 9.6rem;
+  height: 1.3rem;
+  line-height: 1.3rem;
+  background-color: #FAC3C3;
+  padding-left: 0.4rem;
+  color: #FF7D7D;
+  font-size: 0.5rem;
+}
+.words-wrapper{
+  width: 10rem;
+  height: 1.3rem;
+  line-height: 1.3rem;
+  background-color: #FAC3C3;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: transparent;
+}
+.words-wrapper > span{
+  min-width: 1.6rem;
+  height: 1rem;
+  line-height: 1rem;
+  text-align: center;
+  border-radius: 0.5rem;
+  background-color: #FDA5A5;
+}
+svg{
+  display: flex;
+  width: 100%;
+  height: 16rem;
+  align-items: center;
+}
+.download{
+  position: absolute;
+  width: 3rem;
+  height: 1.5rem;
+  line-height: 1.5rem;
+  left: 0;
+  right: 0;
+  top: 12rem;
+  margin: 0 auto;
+  border-radius: 0.5rem;
+  background-color: #FAC3C3;
+  text-align: center;
+  font-size: 0.55rem;
 }
